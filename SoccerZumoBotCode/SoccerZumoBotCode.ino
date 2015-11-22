@@ -29,6 +29,44 @@ void waitForButtonAndCountDown()
   delay(1000);
 }
 
+int clip(int inVal, int minVal, int maxVal)
+{
+  if (inVal > maxVal){
+    return maxVal;
+  }
+  if(inVal < minVal){
+    return minVal;
+  }
+  return inVal;  
+}
+
+//int motorScale(int inVal)
+//{ 
+//  if(inVal < 127)
+//   {
+//      return map(inVal, 0, 127, -255, 0); 
+//   } 
+//  else
+//   {
+//      return map(inVal, 127, 255, 0, 255);
+//   }
+//}
+
+int motorScale(int inVal, int maxVal) 
+{
+  if(inVal <= 127 || inVal >= -127) 
+  {
+    if(inVal > 0) 
+    {
+      return map(inVal, 0, 127, 0, maxVal);
+    }
+    else 
+    { 
+      return map(inVal, -127, 0, -maxVal, 0);
+    }
+  }
+}
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
@@ -70,13 +108,27 @@ void loop() {
   if (disconnectCounter > 2000) { //BLUETOOTH DISCONNECTED
     //Disable Vehicle
     //Turn Everything off
+    motors.setSpeeds(0, 0);    
       
   } else {
-    int scaledThrottle = 127 - throttleValue;
-    int scaledSteering = 127 - steeringValue; 
     
-    int leftMotor = scaledThrottle - scaledSteering;
-    int rightMotor = scaledThrottle + scaledSteering;
+//    int scaledThrottle = 127 - throttleValue; 
+//    int scaledSteering = 127 - steeringValue;   
+//    
+//    int leftMotor = clip(motorScale(scaledThrottle - scaledSteering), -255, 255);
+//    int rightMotor = clip(motorScale(scaledThrottle + scaledSteering), -255, 255);
+    
+    int scaledThrottle = motorScale(127 - throttleValue, 255); 
+    int scaledSteering = motorScale(127 - steeringValue, 200);   
+
+    int leftMotor = clip(scaledThrottle - scaledSteering, -255, 255);
+    int rightMotor = clip(scaledThrottle + scaledSteering, -255, 255);
+    
+    //int scaledThrottle = clip(127 - throttleValue, 0, 255);
+    //int scaledSteering = clip(127 - steeringValue, 0, 255); 
+    
+
+    
     if(leftMotor < 50 && leftMotor > -50) {
       leftMotor = 0; 
     }
